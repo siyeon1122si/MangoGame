@@ -13,53 +13,66 @@ namespace MangoGame
             CharacterChoice characterChoice = new CharacterChoice();
 
             Console.SetCursorPosition(70, 24);
-            Console.WriteLine("▶");
+            Console.Write("▶");
 
             Console.SetCursorPosition(72, 24);
-            Console.WriteLine(" 게임 시작 ");
+            Console.Write(" 게임 시작 ");
 
             Console.SetCursorPosition(72, 28);
-            Console.WriteLine(" 게임 종료 ");
+            Console.Write(" 게임 종료 ");
 
             while (true)
             {
                 ConsoleKeyInfo startEndChoice = Console.ReadKey();
                 switch (startEndChoice.Key)
                 {
-                    case ConsoleKey.UpArrow:
+                    case ConsoleKey.UpArrow: // 게임 시작
                         Console.SetCursorPosition(70, 28);
-                        Console.WriteLine("  ");
+                        Console.Write("  ");
+
                         Console.SetCursorPosition(70, 24);
-                        Console.WriteLine("▶");
+                        Console.Write("▶");
                         break;
-                    case ConsoleKey.DownArrow:
+                    case ConsoleKey.DownArrow: // 게임 종료
                         Console.SetCursorPosition(70, 24);
-                        Console.WriteLine("  ");
+                        Console.Write("  ");
+
                         Console.SetCursorPosition(70, 28);
-                        Console.WriteLine("▶");
+                        Console.Write("▶");
                         break;
                     case ConsoleKey.Enter:
-                        if ( Console.CursorTop == 24)
+                        if ( Console.CursorTop == 24) // 게임 시작 시 캐릭터 선택화면으로 이동
                         {
+                            ClearStart();
                             characterChoice.Character();
                         }
-                        else if ( Console.CursorTop == 28)
+                        else if (Console.CursorTop == 28) // 게임 종료 시 콘솔 창 종료
                         {
+                            ClearStart();
                             End();
                             return;
                         }
                         break;
                     default:
                         break;
-                }
-            }
 
-        }
+                } // switch
 
+            } // while 
 
-        public void End()
+        } // void Start()
+        public void End() // 게임 종료를 누를 시
         {
             Environment.Exit(0);
+        }
+
+        public void ClearStart()
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                Console.SetCursorPosition(70, 22 + i * 2);
+                Console.Write("              ");
+            }
         }
     }
 }

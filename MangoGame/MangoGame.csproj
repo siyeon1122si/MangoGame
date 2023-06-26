@@ -43,7 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BossMap.cs" />
     <Compile Include="Character.cs" />
+    <Compile Include="Map.cs" />
     <Compile Include="StartEnd.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
