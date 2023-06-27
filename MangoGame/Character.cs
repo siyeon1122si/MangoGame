@@ -13,6 +13,9 @@ namespace MangoGame
         {
             Map map = new Map();
 
+            // Cursor visible 처리
+            Console.CursorVisible = false;
+
             Console.SetCursorPosition(23, 3);
             Console.Write("  애긔 망고 ");
 
@@ -60,7 +63,7 @@ namespace MangoGame
             }
 
             int pos = 0;
-
+            bool isChooseCharactor = false;
             while (true)
             {
 
@@ -243,24 +246,29 @@ namespace MangoGame
                             }
                         }
                     case ConsoleKey.Enter:
-                        if (pos == 0)
-                        {
-                            ClearCharacter();
-                            map.MainMap();
-                        }
-                        else if (pos == 1)
-                        {
-                            ClearCharacter();
-                            map.MainMap();
-                        }
-                        else if (pos == 2)
-                        {
-                            ClearCharacter();
-                            map.MainMap();
-                        }
+                        isChooseCharactor = true;
                         break;
                 }
+
+                if(isChooseCharactor) { break; }
             } // while
+
+            // 여기에서 맵으로 넘어간다.
+            if (pos == 0)
+            {
+                ClearCharacter();
+                map.MainMap();
+            }
+            else if (pos == 1)
+            {
+                ClearCharacter();
+                map.MainMap();
+            }
+            else if (pos == 2)
+            {
+                ClearCharacter();
+                map.MainMap();
+            }
         }
 
         public void ClearCharacter()
