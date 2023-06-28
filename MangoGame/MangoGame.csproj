@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Character.cs" />
     <Compile Include="EnemySpot.cs" />
+    <Compile Include="GameOver.cs" />
     <Compile Include="Map.cs" />
     <Compile Include="StartEnd.cs" />
     <Compile Include="Program.cs" />

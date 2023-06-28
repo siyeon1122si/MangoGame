@@ -3,6 +3,7 @@ using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reflection;
 using System.Threading;
 
 
@@ -12,9 +13,11 @@ namespace MangoGame
     {
         List<EnemySpot> enemySpots = new List<EnemySpot>();
         Random random = new Random();
-        int moveCount = 0;
         const int wallX = 156;
         const int wallY = 35;
+
+        int moveCount = 0;
+        int heart = 3;
 
         int playerX = 71;
         int playerY = 15;
@@ -26,12 +29,15 @@ namespace MangoGame
         {
             Wall();
             Player();
-            Enemy();
+
 
             // Cursor visible 처리
             Console.CursorVisible = false;
 
+            Enemy();
             DrawWalls();
+
+            GameOver gameOver = new GameOver();
 
             // 20초 타이머
             TimerCallback callback = Second;
@@ -51,6 +57,11 @@ namespace MangoGame
                             Swap(ref wall[playerY, playerX], ref wall[playerY, playerX + 1]);
                             playerX += 1;
                             moveCount += 1;
+                            EnemyFollow();
+                        }
+                        else if (wall[playerY, playerX + 1] == 'δ')
+                        {
+                            heart -= 1;
                         }
                         break;
                     case ConsoleKey.LeftArrow:
@@ -60,6 +71,11 @@ namespace MangoGame
                             Swap(ref wall[playerY, playerX], ref wall[playerY, playerX - 1]);
                             playerX -= 1;
                             moveCount += 1;
+                            EnemyFollow();
+                        }
+                        else if (wall[playerY, playerX - 1] == 'δ')
+                        {
+                            heart -= 1;
                         }
 
                         break;
@@ -70,6 +86,11 @@ namespace MangoGame
                             Swap(ref wall[playerY, playerX], ref wall[playerY - 1, playerX]);
                             playerY -= 1;
                             moveCount += 1;
+                            EnemyFollow();
+                        }
+                        else if (wall[playerY - 1, playerX] == 'δ')
+                        {
+                            heart -= 1;
                         }
 
                         break;
@@ -80,6 +101,11 @@ namespace MangoGame
                             Swap(ref wall[playerY, playerX], ref wall[playerY + 1, playerX]);
                             playerY += 1;
                             moveCount += 1;
+                            EnemyFollow();
+                        }
+                        else if (wall[playerY + 1, playerX] == 'δ')
+                        {
+                            heart -= 1;
                         }
 
                         break;
@@ -87,7 +113,14 @@ namespace MangoGame
                         break;
                 }
 
+                if (heart <= 0)
+                {
+                    gameOver.Over();
+                }
+
                 DrawWalls();
+                Enemy();
+
             }
         }
 
@@ -186,38 +219,61 @@ namespace MangoGame
             Console.Write("     ");
             Console.SetCursorPosition(75, topPos + 1);
             Console.Write(mapSecond);
+
+            Console.SetCursorPosition(75, topPos + 3);
+            Console.WriteLine("{0}",moveCount);
         }
 
         void Enemy()
         {
-            if ( moveCount == 0 )
+            int count = 0;
+
+            if (moveCount == 0)
             {
-                int count = 0;
-               while ( count < 5 )
+
+                while (count < 5)
                 {
                     int randX = random.Next(1, 154);
                     int randY = random.Next(1, 33);
 
-                    if ( wall[randY, randX] != wall[playerY, playerX] )
+                    for ( int i = 0; i < enemySpots.Count; i++)
+                    {
+                        if (wall[enemySpots[i].y ,enemySpots[i].x ] == wall[randY, randX])
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (wall[randY, randX] != wall[playerY, playerX])
                     {
                         wall[randY, randX] = 'δ';
-                        
+
                         EnemySpot temp = new EnemySpot();
                         temp.x = randX;
                         temp.y = randY;
 
                         enemySpots.Add(temp);
                         count += 1;
+
+
                     }
                 }
             }
 
-            if ( moveCount != 0 && moveCount % 5 == 0 )
+            if (moveCount != 0 && moveCount % 5 == 0)
             {
-                while ( true )
+                while (true)
                 {
                     int randX = random.Next(1, 154);
                     int randY = random.Next(1, 33);
+
+                    for (int i = 0; i < enemySpots.Count; i++)
+                    {
+                        if (wall[enemySpots[i].y, enemySpots[i].x] == wall[randY, randX])
+                        {
+                            continue;
+                        }
+                    }
 
                     if (wall[randY, randX] != wall[playerY, playerX])
                     {
@@ -230,12 +286,127 @@ namespace MangoGame
                         enemySpots.Add(temp);
                         break;
                     }
-
+                    EnemyFollow();
                 }
             }
         }
 
+        void EnemyFollow()
+        {
+            for (int i = 0; i < enemySpots.Count; i++)
+            {
+                wall[enemySpots[i].y, enemySpots[i].x] = ' ';
 
+                if (enemySpots[i].x > playerX)
+                {
+                    if (enemySpots[i].y > playerY) // 적Y > 내Y
+                    {
+                        if (wall[enemySpots[i].y, enemySpots[i].x - 1] == ' ')
+                        {
+                            enemySpots[i].x--; // 더 긴 쪽을 먼저 가겠다
+                        }
+                        if (wall[enemySpots[i].y - 1, enemySpots[i].x] == ' ')
+                        {
+                            enemySpots[i].y--; // 더 긴 쪽을 먼저 가겠다
+                        }
+                    }
+
+                    else if (enemySpots[i].y < playerY) // 적Y < 내Y
+                    {
+                        if (enemySpots[i].x - playerX > playerY - enemySpots[i].y) // 적X - 내X > 내Y - 적Y
+                        {
+                            if (wall[enemySpots[i].y, enemySpots[i].x - 1] == ' ')
+                            {
+                                enemySpots[i].x--; // 더 긴 쪽을 먼저 가겠다
+                            }
+                        }
+                        else if (enemySpots[i].x - playerX < playerY - enemySpots[i].y) // 적X - 내X < 내Y - 적Y
+                        {
+                            if (wall[enemySpots[i].y + 1, enemySpots[i].x] == ' ')
+                            {
+                                enemySpots[i].y++; // 더 긴 쪽을 먼저 가겠다
+                            }
+                        }
+                    }
+                }
+
+                else if (enemySpots[i].x < playerX) // 적X < 내X
+                {
+
+                    if (enemySpots[i].y > playerY) // 적Y > 내Y
+                    {
+                        if (playerY - enemySpots[i].y > enemySpots[i].y - playerY) // 내X - 적X > 적Y - 내Y
+                        {
+                            if (wall[enemySpots[i].y, enemySpots[i].x + 1] == ' ')
+                            {
+                                enemySpots[i].x++; // 더 긴 쪽을 먼저 가겠다
+                            }
+                        }
+                        else if (playerX - enemySpots[i].x < enemySpots[i].y - playerY) // 내X - 적X < 적Y - 내Y
+                        {
+                            if (wall[enemySpots[i].y - 1, enemySpots[i].x] == ' ')
+                            {
+                                enemySpots[i].y--; // 더 긴 쪽을 먼저 가겠다
+                            }
+                        }
+
+                    }
+                    else if (enemySpots[i].y < playerY) // 적Y < 내Y
+                    {
+                        if (playerX - enemySpots[i].x > playerX - enemySpots[i].x) // 적X - 내X > 내Y - 적Y
+                        {
+                            if (wall[enemySpots[i].y, enemySpots[i].x + 1] == ' ')
+                            {
+                                enemySpots[i].x++; // 더 긴 쪽을 먼저 가겠다
+                            }
+                        }
+                        else if (playerX - enemySpots[i].x < playerX - enemySpots[i].x) // 적X - 내X < 내Y - 적Y
+                        {
+                            if (wall[enemySpots[i].y + 1, enemySpots[i].x] == ' ')
+                            {
+                                enemySpots[i].y++; // 더 긴 쪽을 먼저 가겠다
+                            }
+                        }
+                    }
+                    else if (enemySpots[i].x == playerX)
+                    {
+                        if (enemySpots[i].y > playerY) // 적Y > 내Y
+                        {
+                            if (wall[enemySpots[i].y - 1, enemySpots[i].x] == ' ')
+                            {
+                                enemySpots[i].y--; // 더 긴 쪽을 먼저 가겠다
+                            }
+                        }
+                        else if (enemySpots[i].y < playerY) // 적Y < 내Y
+                        {
+                            if (wall[enemySpots[i].y + 1, enemySpots[i].x] == ' ')
+                            {
+                                enemySpots[i].y++; // 더 긴 쪽을 먼저 가겠다
+                            }
+                        }
+                    }
+                    else if (enemySpots[i].x == playerY)
+                    {
+                        if (enemySpots[i].x > playerX)
+                        {
+                            if (wall[enemySpots[i].y, enemySpots[i].x - 1] == ' ')
+                            {
+                                enemySpots[i].x--; // 더 긴 쪽을 먼저 가겠다
+                            }
+                        }
+                        else if (enemySpots[i].x < playerX)
+                        {
+                            if (wall[enemySpots[i].y, enemySpots[i].x + 1] == ' ')
+                            {
+                                enemySpots[i].x++; // 더 긴 쪽을 먼저 가겠다
+                            }
+                        }
+                    }
+                   
+                }
+                wall[enemySpots[i].y, enemySpots[i].x] = 'δ';
+            }
+        }
 
         void Swap(ref char a, ref char b)
         {

@@ -12,14 +12,15 @@ namespace MangoGame
         {
             CharacterChoice characterChoice = new CharacterChoice();
 
-            Console.SetCursorPosition(70, 24);
-            Console.Write("▶");
-
             Console.SetCursorPosition(72, 24);
             Console.Write(" 게임 시작 ");
 
             Console.SetCursorPosition(72, 28);
             Console.Write(" 게임 종료 ");
+
+            Console.SetCursorPosition(70, 24);
+            Console.Write("▶");
+
 
             bool isChooseGameState = false;
             while (true)
