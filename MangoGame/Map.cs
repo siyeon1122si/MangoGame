@@ -33,10 +33,20 @@ namespace MangoGame
         int playerY = 15;
 
         char[,] wall = new char[wallY, wallX];
+        char coin = 'ⓒ';
+
+        int coinPoint = 0;
 
         Timer timer;
+        Timer timer1;
+
         int mapSecond = 20;
 
+        int type = 0;
+
+        int enemyCount = 0;
+
+        int speed = 100; // 몬스터 스피드
         public void MainMap()
         {
             GameOver gameOver = new GameOver();
@@ -44,6 +54,7 @@ namespace MangoGame
             Wall();
             Player();
 
+            bool isCoinMaked = false;
             // Cursor visible 처리
             Console.CursorVisible = false;
 
@@ -54,7 +65,34 @@ namespace MangoGame
             // 20초 타이머 설정
             TimerCallback callback = Second;
             timer = new Timer(callback, null, 0, 1000);
-            // 20초 타이머 설정
+            // 20초 타이머
+
+            TimerCallback enemytimes = EnemyTime;
+            timer1 = new Timer(enemytimes, null, 0, speed);
+
+
+            int randX = random.Next(1, 154);
+            int randY = random.Next(1, 33);
+
+                for (int i = 0; i < enemySpots.Count; i++)
+            {
+                if (wall[enemySpots[i].y, enemySpots[i].x] == wall[randY, randX])
+                {
+                    continue;
+                }
+            }
+
+            if (wall[randY, randX] != wall[playerY, playerX])
+            {
+                wall[randY, randX] = 'δ';
+
+                EnemySpot temp = new EnemySpot();
+                temp.x = randX;
+                temp.y = randY;
+
+                enemySpots.Add(temp);
+
+            }
 
 
             // 공격 
@@ -77,7 +115,14 @@ namespace MangoGame
                                 Swap(ref wall[playerY, playerX], ref wall[playerY, playerX + 1]);
                                 playerX += 1;
                                 moveCount += 1;
-                                EnemyFollow();
+                            }
+
+                            else if (wall[playerY, playerX + 1] == coin)
+                            {
+                                Swap(ref wall[playerY, playerX], ref wall[playerY, playerX + 1]);
+                                wall[playerY, playerX] = ' ';
+                                playerX += 1;
+                                coinPoint += 10;
                             }
 
                             break;
@@ -88,7 +133,14 @@ namespace MangoGame
                                 Swap(ref wall[playerY, playerX], ref wall[playerY, playerX - 1]);
                                 playerX -= 1;
                                 moveCount += 1;
-                                EnemyFollow();
+                            }
+
+                            else if (wall[playerY, playerX - 1] == coin)
+                            {
+                                Swap(ref wall[playerY, playerX], ref wall[playerY, playerX - 1]);
+                                wall[playerY, playerX] = ' ';
+                                playerX -= 1;
+                                coinPoint += 10;
                             }
 
                             break;
@@ -99,7 +151,14 @@ namespace MangoGame
                                 Swap(ref wall[playerY, playerX], ref wall[playerY - 1, playerX]);
                                 playerY -= 1;
                                 moveCount += 1;
-                                EnemyFollow();
+                            }
+
+                            else if (wall[playerY - 1, playerX] == coin)
+                            {
+                                Swap(ref wall[playerY, playerX], ref wall[playerY - 1, playerX]);
+                                wall[playerY, playerX] = ' ';
+                                playerY -= 1;
+                                coinPoint += 10;
                             }
 
                             break;
@@ -110,7 +169,14 @@ namespace MangoGame
                                 Swap(ref wall[playerY, playerX], ref wall[playerY + 1, playerX]);
                                 playerY += 1;
                                 moveCount += 1;
-                                EnemyFollow();
+                            }
+
+                            else if (wall[playerY + 1, playerX] == coin)
+                            {
+                                Swap(ref wall[playerY, playerX], ref wall[playerY + 1, playerX]);
+                                wall[playerY, playerX] = ' ';
+                                playerY += 1;
+                                coinPoint += 10;
                             }
 
                             break;
@@ -129,31 +195,79 @@ namespace MangoGame
                     }
                 }
 
-
-                if (mapSecond == 0)
-                {
-                    BossATK();
-                    Boss();
-                }
-
-                DrawWalls();
                 if (wall[playerY, playerX + 1] == 'δ' || wall[playerY, playerX - 1] == 'δ'
                     || wall[playerY + 1, playerX] == 'δ' || wall[playerY - 1, playerX] == 'δ')
                 {
                     heart -= 1;
                 }
 
-                if (heart <= 0)
+                Console.SetCursorPosition(10, 3);
+                Console.Write(" 보유 코인 : {0}", coinPoint);
+
+                if (heart > 200 && heart <= 300)
                 {
-                    gameOver.Over();
+                    HeartClear();
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.SetCursorPosition(10, 1);
+                    Console.Write(" ♥  ♥  ♥ ");
+                    Console.ResetColor();
                 }
 
+                else if (heart > 100 && heart <= 200)
+                {
+                    HeartClear();
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.SetCursorPosition(10, 1);
+                    Console.Write(" ♥  ♥  ");
+                    Console.ResetColor();
 
-                Enemy();
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.Write("♥");
+                    Console.ResetColor();
+                }
+
+                else if (heart > 0 && heart <= 100)
+                {
+                    HeartClear();
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.SetCursorPosition(10, 1);
+                    Console.Write(" ♥  ");
+                    Console.ResetColor();
+
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.Write("♥  ♥");
+                    Console.ResetColor();
+                }
+
+                else
+                {
+                    HeartClear();
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.SetCursorPosition(10, 1);
+                    Console.Write(" ♥  ♥  ♥ ");
+                    Console.ResetColor();
+                    gameOver.Over();
+                }
+                //Enemy();
+
+                if (mapSecond == 0)
+                {
+                    ClearTimer();
+                    BossATK();
+                    Boss();
+                }
+
+                DrawWalls();
+
+                if (bossHp == 0 && isCoinMaked == false)
+                {
+                    timer = new Timer(callback, null, 0, 1000);
+                    Coin();
+                    mapSecond = 10;
+                    isCoinMaked = true;
+                }
             }
         }
-
-
 
         // 유저 }
         public void Player()
@@ -178,7 +292,6 @@ namespace MangoGame
                 Console.ReadKey(false);
             }
         }
-
 
         // 맵 {
         public void Wall()
@@ -253,7 +366,7 @@ namespace MangoGame
             Console.WriteLine("{0}", moveCount);
 
             Console.SetCursorPosition(75, topPos + 2);
-            Console.WriteLine("{0} {1}", heart , bossHp);
+            Console.WriteLine("{0} {1}", heart, bossHp);
         }
         // } 맵
 
@@ -289,7 +402,7 @@ namespace MangoGame
                     spaceDown = false;
                 }
 
-               
+
 
             }
 
@@ -305,7 +418,9 @@ namespace MangoGame
                 {
                     if (x == 35 && y == 5)
                     {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         wall[y, x] = '★';
+                        Console.ResetColor();
                     }
                 }
             }
@@ -316,13 +431,14 @@ namespace MangoGame
         void Enemy()
         {
 
-            if (moveCount == 0)
+            if (enemyCount > 1)
             {
 
-                while (enemySpots.Count < 5)
+                int randX = random.Next(1, 154);
+                int randY = random.Next(1, 33);
+
+                if (mapSecond % 3 == 0) // 몬스터가 나오는 시간
                 {
-                    int randX = random.Next(1, 154);
-                    int randY = random.Next(1, 33);
 
                     for (int i = 0; i < enemySpots.Count; i++)
                     {
@@ -341,46 +457,21 @@ namespace MangoGame
                         temp.y = randY;
 
                         enemySpots.Add(temp);
-                    }
-                }
-            }
-            EnemyFollow();
-            if (moveCount != 0 && moveCount % 20 == 0 )
-            {
 
-                int randX = random.Next(1, 154);
-                int randY = random.Next(1, 33);
-
-                for (int i = 0; i < enemySpots.Count; i++)
-                {
-                    if (wall[enemySpots[i].y, enemySpots[i].x] == wall[randY, randX])
-                    {
-                        continue;
                     }
                 }
 
-                if (wall[randY, randX] != wall[playerY, playerX] && moveCount % 20 == 0 && enemySpots.Count % 5 <= 5 )
-                {
-                    wall[randY, randX] = 'δ';
-
-                    EnemySpot temp = new EnemySpot();
-                    temp.x = randX;
-                    temp.y = randY;
-
-                    enemySpots.Add(temp);
-
-                }
                 EnemyFollow();
+
+                enemyCount = 0;
+
 
             }
         }
         void EnemyFollow()
         {
-            
-
             for (int i = 0; i < enemySpots.Count; i++)
             {
-
 
                 wall[enemySpots[i].y, enemySpots[i].x] = ' ';
 
@@ -495,10 +586,54 @@ namespace MangoGame
                     }
                 }
                 wall[enemySpots[i].y, enemySpots[i].x] = 'δ';
-            }
+            }   // for
+
+
+
+
         }
         // } 적 생성 및 따라오게 하기 
 
+
+        void Coin()
+        {
+            //Console.Clear();
+
+            int coinCount = 0;
+
+            while (true)
+            {
+                int randX = random.Next(1, 154);
+                int randY = random.Next(5, 33);
+
+                Console.SetCursorPosition(randX, randY);
+
+                if (wall[randY, randX] == ' ')
+                {
+                    wall[randY, randX] = coin;
+                    coinCount++;
+                    Console.Write(wall[randY, randX]); // 코인의 좌표
+                }
+
+                if (coinCount == 40)
+                {
+                    break;
+                }
+            }
+            Player();
+        }
+
+        void Store()
+        {
+            Console.Clear();
+
+            Wall();
+
+            Console.SetCursorPosition(75, topPos + 3);
+            Console.WriteLine(" 상 점 ");
+
+
+        }
 
         void Second(object state)
         {
@@ -508,19 +643,27 @@ namespace MangoGame
             // Dispose
             if (mapSecond == 0)
             {
+                type = 1;
                 timer.Dispose();
             }
         }       // Second()
+
+        void EnemyTime(object state)
+        {
+            // 시간이 흘러간다.
+            if (mapSecond != 0)
+            {
+                if (type == 0)
+                {
+                    enemyCount++;
+                    Enemy();
+                }
+            }
+        }
+
         void Swap(ref char a, ref char b)
         {
             char temp = a;
-            a = b;
-            b = temp;
-        }
-
-        void Swap(ref int a, ref int b)
-        {
-            int temp = a;
             a = b;
             b = temp;
         }
@@ -530,6 +673,15 @@ namespace MangoGame
             for (int i = 0; i < 4; i++)
             {
                 Console.SetCursorPosition(71, 1 + i);
+                Console.Write("              ");
+            }
+        }
+
+        void HeartClear()
+        {
+            for (int i = 0; i < 1; i++)
+            {
+                Console.SetCursorPosition(10, 1 + i);
                 Console.Write("              ");
             }
         }
